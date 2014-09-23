@@ -5,14 +5,16 @@ asd <- function(numeric_vector) {
         sum(abs(numeric_vector - median(numeric_vector))) /
              length(numeric_vector)
 }
-normalize.vector <- function(nvector, median, asd) {
-    sapply(nvector, mss, median, asd)
+normalize.vector <- function(nvector, m, a) {
+    
+    sapply(nvector, mss, m, a)
 }
 normalize <- function(df) {
     column_is_numeric <- sapply(df, is.numeric)
-    
-    df[,column_is_numeric] <- sapply(df[,column_is_numeric], normalize.vector,
-                                     global.median, global.asd)
+    for(name in names(df[, column_is_numeric])) {
+        df[, name] <- normalize.vector(df[, name], global.median[name], global.asd[name])
+    }
+    # # Redundant Code df[,column_is_numeric] <- sapply(df[,column_is_numeric], normalize.vector)
     # loops through each numeric column
     # normalizes that column
     # replaces original numeric columns with normalized numeric columns
@@ -48,8 +50,10 @@ read.normalized.table <- function(table_location, set.globals = TRUE) {
 }
 main <- function(test_data_location, classifier_data_location) {
     classifier <- read.normalized.table(classifier_data_location)
-    return(classifier)
     test_data <- read.normalized.table(test_data_location, set.globals = FALSE)
+    print("Global median is")
+    print(global.median)
+    return(test_data)
     distances <- get.distances(test_data, classifier)
     nearest_neighbors <- get.nearest.neighbors(classifier$class, distances)
     nearest_neighbors
@@ -62,12 +66,8 @@ test.main <- function() {
                             "chapter-4/datasets/athletesTestSet.txt", sep="")
     main(tstFilePath, txtFilePath)
 }
-bar <- function(point, points) {
-    column_is_numeric <- sapply(points, is.numeric)
-    for(rowname in rownames(points)) {
-        print(points[, column_is_numeric][row, ])
-        points[, column_is_numeric][row, ] <- abs(points[, column_is_numeric][row, ] - point)
-    }
-    points
-    
-}
+bar <- function(df, vec) {
+    column_is_numeric <- sapply(df, is.numeric)
+    df <- df[, column_is_numeric]
+    df <- t(t(df) - vec)
+} 
