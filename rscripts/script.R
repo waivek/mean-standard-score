@@ -48,15 +48,32 @@ read.normalized.table <- function(table_location, set.globals = TRUE) {
     normalized_table <- normalize(normalized_table)
     normalized_table
 }
+
+get.distances <- function(vec, df) {
+    class <- df[, "class"]
+    column_is_numeric <- sapply(df, is.numeric)
+    df <- df[, column_is_numeric]
+    df <- t(t(df) - vec)
+    df <- abs(df)
+    distance <- rowSums(df)
+    df <- data.frame(class, distance)
+    df <- df[with(df, order(distance)),]
+    df$class[1]
+    
+} 
+classify <- function(df, classifier) {
+    name <- df$comment
+    actual <- df$class
+    column_is_numeric <- sapply(df, is.numeric)
+    df <- df[, column_is_numeric]
+    factor <- apply(df, 1, get.distances, classifier)
+    predicted <- as.character(factor)
+    data.frame(name, predicted, actual)
+}
 main <- function(test_data_location, classifier_data_location) {
     classifier <- read.normalized.table(classifier_data_location)
     test_data <- read.normalized.table(test_data_location, set.globals = FALSE)
-    print("Global median is")
-    print(global.median)
-    return(test_data)
-    distances <- get.distances(test_data, classifier)
-    nearest_neighbors <- get.nearest.neighbors(classifier$class, distances)
-    nearest_neighbors
+    classify(test_data, classifier)
     
 }
 test.main <- function() {
@@ -66,8 +83,4 @@ test.main <- function() {
                             "chapter-4/datasets/athletesTestSet.txt", sep="")
     main(tstFilePath, txtFilePath)
 }
-bar <- function(df, vec) {
-    column_is_numeric <- sapply(df, is.numeric)
-    df <- df[, column_is_numeric]
-    df <- t(t(df) - vec)
-} 
+
