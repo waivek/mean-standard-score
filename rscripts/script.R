@@ -12,7 +12,7 @@ normalize <- function(df) {
     column_is_numeric <- sapply(df, is.numeric)
     
     df[,column_is_numeric] <- sapply(df[,column_is_numeric], normalize.vector,
-                                     median[i], asd[i])
+                                     global.median, global.asd)
     # loops through each numeric column
     # normalizes that column
     # replaces original numeric columns with normalized numeric columns
@@ -32,13 +32,13 @@ global.median <- numeric(0)
 global.asd <- numeric(0)
 set.globals <- function(df) {
     column_is_numeric <- sapply(df, is.numeric)
-    global.median <<- sapply(table[, column_is_numeric] , median)
-    global.asd <<- sapply(table[, column_is_numeric] , asd)
+    global.median <<- sapply(df[, column_is_numeric] , median)
+    global.asd <<- sapply(df[, column_is_numeric] , asd)
     # The <<- operator changes the global variables
     # The <- operator would have simply created local variables of the
     # same name
 }
-read.normalized.table <- function(table_location, set.globals = FALSE) {
+read.normalized.table <- function(table_location, set.globals = TRUE) {
     normalized_table <- get.table(table_location)
     if(set.globals == TRUE) {
         set.globals(normalized_table)
@@ -46,15 +46,6 @@ read.normalized.table <- function(table_location, set.globals = FALSE) {
     normalized_table <- normalize(normalized_table)
     normalized_table
 }
-get.distances <- function(df1, df2) {
-    column_is_numeric <- sapply(df1, is.numeric)
-    rowSums(abs(df1[, column_is_numeric] - df2[, column_is_numeric]))
-}
-get.nearest.neighbors <- function(classes, distances) {
-    neighbors <- data.frame(classes, distances)
-    neighbors[with(neighbors, order(distances)),]
-}
-
 main <- function(test_data_location, classifier_data_location) {
     classifier <- read.normalized.table(classifier_data_location)
     return(classifier)
@@ -65,11 +56,12 @@ main <- function(test_data_location, classifier_data_location) {
     
 }
 test.main <- function() {
-    txtFilePath <- "/home/waivek/Desktop/R/guidetodatamining.com/chapter-4/datasets/athletesTrainingSet.txt"
-    tstFilePath <- "/home/waivek/Desktop/R/guidetodatamining.com/chapter-4/datasets/athletesTestSet.txt"
+    txtFilePath <- paste("/home/waivek/Desktop/R/guidetodatamining.com/",
+                            "chapter-4/datasets/athletesTrainingSet.txt", sep="")
+    tstFilePath <- paste("/home/waivek/Desktop/R/guidetodatamining.com/",
+                            "chapter-4/datasets/athletesTestSet.txt", sep="")
     main(tstFilePath, txtFilePath)
 }
-test.main()
 bar <- function(point, points) {
     column_is_numeric <- sapply(points, is.numeric)
     for(rowname in rownames(points)) {
