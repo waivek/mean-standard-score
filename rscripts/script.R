@@ -45,6 +45,7 @@ read.normalized.table <- function(table_location, set.globals = TRUE) {
     if(set.globals == TRUE) {
         set.globals(normalized_table)
     }
+    normalized_table$class <- as.character(normalized_table$class)
     normalized_table <- normalize(normalized_table)
     normalized_table
 }
@@ -62,25 +63,32 @@ get.distances <- function(vec, df) {
     
 } 
 classify <- function(df, classifier) {
-    name <- df$comment
+    #name <- df$comment
     actual <- df$class
     column_is_numeric <- sapply(df, is.numeric)
     df <- df[, column_is_numeric]
     factor <- apply(df, 1, get.distances, classifier)
     predicted <- as.character(factor)
-    data.frame(name, predicted, actual)
+    data.frame(predicted, actual, correct.prediction = predicted == actual)
 }
 main <- function(test_data_location, classifier_data_location) {
     classifier <- read.normalized.table(classifier_data_location)
     test_data <- read.normalized.table(test_data_location, set.globals = FALSE)
-    classify(test_data, classifier)
+    df <- classify(test_data, classifier)
+    print(df)
+    print(sprintf("Accuracy is: %.2f%%", 100 * sum(df$correct.prediction) / nrow(df)))
     
 }
 test.main <- function() {
     txtFilePath <- paste("/home/waivek/Desktop/R/guidetodatamining.com/",
-                            "chapter-4/datasets/athletesTrainingSet.txt", sep="")
+                        "chapter-4/datasets/mpgTrainingSet.txt", sep="")
     tstFilePath <- paste("/home/waivek/Desktop/R/guidetodatamining.com/",
-                            "chapter-4/datasets/athletesTestSet.txt", sep="")
+                        "chapter-4/datasets/mpgTestSet.txt", sep="")
+#     txtFilePath <- paste("/home/waivek/Desktop/R/guidetodatamining.com/",
+#                          "chapter-4/datasets/irisTrainingSet.data", sep="")
+#     tstFilePath <- paste("/home/waivek/Desktop/R/guidetodatamining.com/",
+#                          "chapter-4/datasets/irisTestSet.data", sep="")
+    
     main(tstFilePath, txtFilePath)
 }
 
